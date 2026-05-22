@@ -1,0 +1,50 @@
+:root {
+  --primary: #A67B5B;     /* Primary Brown */
+  --secondary: #C8A27C;   /* Soft Brown */
+  --bg: #F8F4EF;          /* Cream */
+  --white: #FFFFFF;       /* White */
+  --text: #2B2B2B;        /* Dark Text */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 90%;
+  max-width: 1400px;
+  margin: auto;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: var(--secondary);
+}
+
