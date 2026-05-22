@@ -14,8 +14,7 @@ export const apiFetch = async (
   }
 
   return await $fetch(url, {
-    baseURL:
-      'https://stoplight-equal-violator.ngrok-free.dev',
+    baseURL: API_BASE_URL,
 
     credentials: 'include',
 
