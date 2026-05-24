@@ -58,34 +58,43 @@
     <div class="container category-bar-wrap">
       <hr class="separator" />
 
-      <div class="category-bar">
-        <span
-          v-for="category in categories.slice(0, 3)"
-          :key="category.id"
-          class="category-item"
-        >
-          {{ category.categoryName }}
-        </span>
-        
-        <div class="dropdown-parent">
-
-          <div class="flex" style="align-items:center; gap:4px; cursor:pointer">
-            <span class="category-label">Semua Kategori</span>
-            <ChevronDown :size="14" />
-          </div>
-
-          <div class="dropdown-menu">
+      <div class="category-information-container">
+          <div class="category-bar">
             <span
-              v-for="category in categories"
+              v-for="category in categories.slice(0, 3)"
               :key="category.id"
-              class="dropdown-item"
+              class="category-item"
             >
               {{ category.categoryName }}
             </span>
+            
+            <div class="dropdown-parent">
+
+              <div class="flex" style="align-items:center; gap:4px; cursor:pointer">
+                <span class="category-label">Semua Kategori</span>
+                <ChevronDown :size="14" />
+              </div>
+
+              <div class="dropdown-menu">
+                <span
+                  v-for="category in categories"
+                  :key="category.id"
+                  class="dropdown-item"
+                >
+                  {{ category.categoryName }}
+                </span>
+              </div>
+
+            </div>
           </div>
 
-        </div>
+          <div class="information">
+            <a href="">Cara Beli</a>
+            <span class="divider"></span>
+            <a href="">Contact-us</a>
+          </div>
       </div>
+
     </div>
     
   </header>
@@ -98,7 +107,7 @@
 import { useAuth } from '~/composables/useAuth'
 import { ref, onMounted } from 'vue'
 import { categoryService } from '~/services/categoryService'
-import { ChevronDown, Menu, Search } from '@lucide/vue'
+import { ChevronDown, Menu, Search, SeparatorVertical } from '@lucide/vue'
 
 const categories = ref([])
 const searchOpen = ref(false)
@@ -252,6 +261,18 @@ onMounted(() => {
   position: relative;
 }
 
+.information {
+  display: flex;
+  align-items: center; 
+  font-size: 14px;
+}
+
+.category-information-container {
+  display:flex;
+  justify-content: space-between; /* ← tambah ini */
+  align-items: center;   
+}
+
 .category-label {
   font-size: 14px;
   color: #333;
@@ -372,6 +393,7 @@ onMounted(() => {
 }
 
 .divider {
+  display: inline-block;
   width: 1px;
   height: 20px;
   background: #b58763;
