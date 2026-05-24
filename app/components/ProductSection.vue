@@ -1,9 +1,14 @@
 <template>
   <section class="container products">
 
-    <h2 class="section-title">
-      Produk Terbaru
-    </h2>
+    <div class="section-title">
+        <p>
+          Produk Terbaru
+        </p>
+
+        <a href="#">Telusuri</a>
+    </div>
+
 
     <div class="product-grid">
 
@@ -34,7 +39,7 @@ const getProducts = async () => {
   try {
 
     const response =
-      await productService.getAllProducts()
+      await productService.getAllProducts(null, 'desc', 4, 1)
 
     products.value =
       response.map(product => ({
@@ -61,6 +66,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+.section-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 20px;
+}
+
+.section-title a {
+  text-decoration: underline;
+}
+
 .products {
   margin: 60px auto;
 }
@@ -92,6 +110,9 @@ onMounted(() => {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+  .section-title {
+    font-size: 14px;
   }
 }
 </style>

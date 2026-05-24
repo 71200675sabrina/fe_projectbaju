@@ -3,15 +3,22 @@ import { apiFetch } from './api'
 export const productService = {
 
   // GET ALL PRODUCT
-  async getAllProducts() {
+  async getAllProducts(categories, sort, limit, page) {
+    const params = new URLSearchParams()
+
+    if (categories) params.append('categories', categories)
+    if (sort) params.append('sort', sort)
+    if (limit) params.append('limit', limit)
+    if (page) params.append('page', page)
 
     const response = await apiFetch(
-      '/v1/products',
+      `/v1/products?${params.toString()}`,
       {
         method: 'GET'
       }
     )
 
+    console.log('response:', response)
     return response.data.data
   },
 

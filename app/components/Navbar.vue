@@ -2,76 +2,123 @@
   <header class="navbar">
     <div class="container nav-content">
       <div class="logo">New Brand</div>
+      <div class="flex">
 
-      <nav :class="['nav-links', { active: menuOpen }]">
-        <div class="mega-parent">
-          <a href="#">Kategori</a>
-          <div class="mega-menu">
+        <div class="menu-bar-wrap">
+              <Menu :size="20" color="#b58763" @click="menuOpen = !menuOpen" style="cursor:pointer" />
+              <span class="divider"></span>
 
-            <div
-                v-for="category in categories"
-                :key="category.id"
-                class="mega-item"
-            >
-                {{ category.categoryName }}
-            </div>
+              <Transition name="dropdown">
+                <div v-show="menuOpen" class="mobile-menu">
+                  <p class="mobile-menu-title">Kategori Terbaru</p>
+                  
+                  <span
+                    v-for="category in categories.slice(0, 3)"
+                    :key="category.id"
+                    class="mobile-menu-item"
+                  >
+                    {{ category.categoryName }}
+                  </span>
+                  
+                  <div class="mobile-all-category">
+                    <div class="flex" style="cursor:pointer; align-items:center; gap:4px" @click="allCategoryOpen = !allCategoryOpen">
+                      <p class="mobile-menu-title">Semua Kategori</p>
+                      <ChevronDown :size="14" color="#b58763" :style="{ transform: allCategoryOpen ? 'rotate(180deg)' : 'rotate(0)', transition: '.25s' }" />
+                    </div>
 
-           </div>
+                    <Transition name="dropdown">
+                      <div v-show="allCategoryOpen" class="all-category-list">
+                        <span
+                          v-for="category in categories"
+                          :key="category.id"
+                          class="mobile-menu-item"
+                        >
+                          {{ category.categoryName }}
+                        </span>
+                      </div>
+                    </Transition>
+                  </div>
+
+                  <p class="mobile-menu-title">Informasi</p>
+                  <div class="mobile-information">
+                      <a class="mobile-menu-item" href="#">Cara Beli</a>
+                      <a class="mobile-menu-item" href="#">Contact-Us</a>
+                  </div>
+                  
+                </div>
+              </Transition>
         </div>
 
-        <a
-        href="https://wa.me/6281234567890"
-        target="_blank"
-        rel="noopener"
-        >
-        Kontak Kami
-        </a>
+        <div class="search-wrap">
+          <Search :size="20" color="#b58763" @click="searchOpen = !searchOpen" style="cursor:pointer" />
+          <Transition name="dropdown">
+            <div v-show="searchOpen" class="dropdown-search">
+              <input class="search-input" placeholder="Cari produk..." autofocus />
+            </div>
+          </Transition>
+        </div>
 
-        <a
-        href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20ingin%20bertanya%20cara%20pembelian."
-        target="_blank"
-        rel="noopener"
-        >
-        Cara Beli
-        </a>
-      </nav>
-
-      <div class="nav-right">
-        <button class="hamburger" @click="menuOpen = !menuOpen">☰</button>
-
-        <!--
-        <NuxtLink
-        v-if="!isAdmin && route.path.startsWith('/admin')"
-        </NuxtLink>
-        -->
-
-        <NuxtLink
-        v-if="!isAdmin"
-        to="/admin/login"
-        class="admin-login"
-        >
-        Admin Login
-        </NuxtLink>
-        
-
-        <button
-            v-else
-            @click="handleLogout"
-            class="logout-nav"
-            >
-            Logout
-        </button>
       </div>
     </div>
+
+    <div class="container category-bar-wrap">
+      <hr class="separator" />
+
+      <div class="category-information-container">
+          <div class="category-bar">
+            <span
+              v-for="category in categories.slice(0, 3)"
+              :key="category.id"
+              class="category-item"
+            >
+              {{ category.categoryName }}
+            </span>
+            
+            <div class="dropdown-parent">
+
+              <div class="flex" style="align-items:center; gap:4px; cursor:pointer">
+                <span class="category-label">Semua Kategori</span>
+                <ChevronDown :size="14" />
+              </div>
+
+              <div class="dropdown-menu">
+                <span
+                  v-for="category in categories"
+                  :key="category.id"
+                  class="dropdown-item"
+                >
+                  {{ category.categoryName }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="information">
+            <a href="">Cara Beli</a>
+            <span class="divider"></span>
+            <a href="">Contact-us</a>
+          </div>
+      </div>
+
+    </div>
+    
   </header>
+      <Transition name="fade">
+      <div v-show="menuOpen || searchOpen" class="overlay" @click="menuOpen = false; searchOpen = false" />
+    </Transition>
 </template>
 
 <script setup>
 import { useAuth } from '~/composables/useAuth'
 import { ref, onMounted } from 'vue'
 import { categoryService } from '~/services/categoryService'
+import { ChevronDown, Menu, Search, SeparatorVertical } from '@lucide/vue'
 
 const categories = ref([])
+const searchOpen = ref(false)
+const menuOpen = ref(false)
+const allCategoryOpen = ref(false)
 
 const route = useRoute()
 
@@ -94,9 +141,7 @@ const getCategories = async () => {
 
     categories.value =
       await categoryService.getAllCategory()
-
   } catch (error) {
-
     console.error(error)
   }
 }
@@ -107,9 +152,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .navbar {
   background: #fff;
-  border-bottom: 1px solid #ececec;
   position: sticky;
   top: 0;
   z-index: 999;
@@ -122,219 +183,250 @@ onMounted(() => {
   min-height: 78px;
 }
 
+.menu-bar-wrap {
+  display: none;
+  align-items: center;
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.05);
+  z-index: 99999;
+}
+
+.mobile-menu-item {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.mobile-menu-item:hover {
+  background: #f8f5f2;
+}
+
+.mobile-menu-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b58763;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0 12px;
+  margin-bottom: 4px;
+}
+
+.mobile-all-category {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 15px;
+}
+
+.all-category-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.all-category-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.all-category-list::-webkit-scrollbar-track {
+  background: #f8f5f2;
+  border-radius: 4px;
+}
+
+.all-category-list::-webkit-scrollbar-thumb {
+  background: #b58763;
+  border-radius: 4px;
+}
+
+.category-bar {
+  display: flex;
+  gap: 24px;
+  padding: 10px 0;
+}
+
+.category-item {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: .25s;
+  padding-bottom: 4px;
+  position: relative;
+}
+
+.information {
+  display: flex;
+  align-items: center; 
+  font-size: 14px;
+}
+
+.mobile-information{
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.category-information-container {
+  display:flex;
+  justify-content: space-between; /* ← tambah ini */
+  align-items: center;   
+}
+
+.category-label {
+  font-size: 14px;
+  color: #333;
+}
+
+.category-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #b58763;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .3s ease;
+}
+
+.category-item:hover::after {
+  transform: scaleX(1);
+}
+
+.category-item:hover {
+  color: #b58763;
+}
+
+.dropdown-parent {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: auto;
+  min-width: 200px;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  padding-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 180px);
+  max-width: 600px;
+  gap: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  z-index: 99999;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s;
+}
+
+.dropdown-parent:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.dropdown-item:hover {
+  color: #b58763;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.dropdown-search {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  z-index: 99999;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.search-input {
+  width: 100%;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: .25s;
+}
+
+.search-input:focus {
+  border-color: #b58763;
+}
+
 .logo {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
   color: #b58763;
 }
 
-
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-  transition: .25s;
-}
-
-.nav-links a:hover {
-  color: #b58763;
-}
-
-
-
-.mega-parent {
-  position: relative;
-}
-
-.mega-parent > a {
-  cursor: pointer;
-}
-
-.mega-menu {
-  position: absolute;
-  top: calc(100% + 15px);
-  left: 0;
-
-  width: 280px;
-
-  background: white;
-
-  border-radius: 18px;
-
-  padding: 14px;
-
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.08);
-
-  z-index: 9999; /* FIX AGAR TIDAK TERTIMPA BANNER */
-}
-
-.mega-parent:hover .mega-menu {
-  display: flex;
-}
-
-.mega-item {
-  padding: 12px 14px;
-  border-radius: 12px;
-
-  cursor: pointer;
-
-  transition: .25s;
-}
-
-.mega-item:hover {
-  background: #f8f5f2;
-  color: #b58763;
-}
-
-
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-
-.admin-login {
-  height: 42px;
-
-  padding: 0 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 12px;
-
-  border: 1px solid #b58763;
-
-  text-decoration: none;
-
-  color: #b58763;
-
-  font-weight: 600;
-
-  transition: .25s;
-}
-
-.admin-login:hover {
+.divider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
   background: #b58763;
-  color: white;
+  margin: 0 10px;
 }
 
-
-
-.logout-nav {
-  height: 42px;
-
-  padding: 0 18px;
-
+.separator {
   border: none;
-
-  border-radius: 12px;
-
-  background: #b58763;
-  color: white;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: .25s;
+  border-top: 1px solid #ececec;
+  margin-bottom: 10px;
 }
-
-.logout-nav:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 8px 20px rgba(181,135,99,.25);
-}
-
-
-.hamburger {
-  display: none;
-
-  background: transparent;
-  border: none;
-
-  font-size: 26px;
-  cursor: pointer;
-}
-
-
 
 @media (max-width: 768px) {
-
-  .hamburger {
-    display: block;
-  }
-
-  .nav-content {
-    min-height: 70px;
-  }
-
-  .nav-links {
+  .category-bar-wrap {
     display: none;
-
-    position: absolute;
-
-    top: 100%;
-    left: 0;
-
-    width: 100%;
-
-    background: white;
-
-    flex-direction: column;
-    align-items: flex-start;
-
-    padding: 20px;
-
-    gap: 18px;
-
-    border-top: 1px solid #eee;
-
-    box-shadow:
-      0 10px 20px rgba(0,0,0,.05);
-
-    z-index: 999;
   }
 
-  .nav-links.active {
+  .menu-bar-wrap {
     display: flex;
-  }
-
-  .mega-menu {
-    position: static;
-
-    width: 100%;
-
-    display: flex;
-
-    margin-top: 10px;
-
-    box-shadow: none;
-
-    border: 1px solid #eee;
-  }
-
-  .admin-login,
-  .logout-nav {
-    height: 40px;
-    padding: 0 14px;
-    font-size: 14px;
   }
 }
+
 </style>
