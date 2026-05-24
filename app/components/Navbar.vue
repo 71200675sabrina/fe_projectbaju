@@ -38,6 +38,12 @@
                       </div>
                     </Transition>
                   </div>
+
+                  <p class="mobile-menu-title">Informasi</p>
+                  <div class="mobile-information">
+                      <a class="mobile-menu-item" href="#">Cara Beli</a>
+                      <a class="mobile-menu-item" href="#">Contact-Us</a>
+                  </div>
                   
                 </div>
               </Transition>
@@ -223,6 +229,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-bottom: 15px;
 }
 
 .all-category-list {
@@ -264,6 +271,12 @@ onMounted(() => {
 .information {
   display: flex;
   align-items: center; 
+  font-size: 14px;
+}
+
+.mobile-information{
+  display: flex;
+  flex-direction: column;
   font-size: 14px;
 }
 
