@@ -43,11 +43,9 @@ onMounted(() => {
 <style scoped>
 /* HERO SECTION UTAMA */
 .hero {
-  width: 90vw;              
-  height: 60vh;             
+  height: 40vh;             
   margin: 30px auto;        
   overflow: hidden;
-  border-radius: 12px;
 }
 
 /* SLIDER */

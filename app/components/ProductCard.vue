@@ -18,7 +18,7 @@
     <h3>{{ title }}</h3>
 
     <p>
-      Rp {{ price }}
+      Rp {{ new Intl.NumberFormat('id-ID').format(price) }}
     </p>
   </NuxtLink>
 </template>
