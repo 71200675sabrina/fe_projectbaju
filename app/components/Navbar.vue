@@ -15,6 +15,7 @@
                   <span
                     v-for="category in categories.slice(0, 3)"
                     :key="category.id"
+                    :to="`/product?categories=${category.id}&categoryName=${category.categoryName}`"
                     class="mobile-menu-item"
                   >
                     {{ category.categoryName }}
@@ -31,6 +32,7 @@
                         <span
                           v-for="category in categories"
                           :key="category.id"
+                          :to="`/product?categories=${category.id}&categoryName=${category.categoryName}`"
                           class="mobile-menu-item"
                         >
                           {{ category.categoryName }}
@@ -66,13 +68,14 @@
 
       <div class="category-information-container">
           <div class="category-bar">
-            <span
+            <NuxtLink
               v-for="category in categories.slice(0, 3)"
               :key="category.id"
+              :to="`/product?categories=${category.id}&categoryName=${category.categoryName}`"
               class="category-item"
             >
               {{ category.categoryName }}
-            </span>
+            </NuxtLink>
             
             <div class="dropdown-parent">
 
@@ -82,13 +85,14 @@
               </div>
 
               <div class="dropdown-menu">
-                <span
+                <NuxtLink
                   v-for="category in categories"
                   :key="category.id"
+                  :to="`/product?categories=${category.id}&categoryName=${category.categoryName}`"
                   class="dropdown-item"
                 >
                   {{ category.categoryName }}
-                </span>
+                </NuxtLink>
               </div>
 
             </div>
@@ -113,7 +117,7 @@
 import { useAuth } from '~/composables/useAuth'
 import { ref, onMounted } from 'vue'
 import { categoryService } from '~/services/categoryService'
-import { ChevronDown, Menu, Search, SeparatorVertical } from '@lucide/vue'
+import { ChevronDown, Menu, Search } from '@lucide/vue'
 
 const categories = ref([])
 const searchOpen = ref(false)
@@ -409,7 +413,7 @@ onMounted(() => {
   display: inline-block;
   width: 1px;
   height: 20px;
-  background: #b58763;
+  background: #ececec;
   margin: 0 10px;
 }
 
@@ -426,6 +430,10 @@ onMounted(() => {
 
   .menu-bar-wrap {
     display: flex;
+  }
+  
+  .divider {
+    background: #b58763;
   }
 }
 
