@@ -33,14 +33,26 @@
 
       <div class="banner-grid">
 
-        <div
-          v-for="banner in banners"
-          :key="banner.id"
-          class="banner-item"
-        >
+        <template v-if="isLoadingBanners">
+
+          <BannerSkeleton
+            v-for="n in 3"
+            :key="n"
+          />
+
+        </template>
+
+        <template v-else>
+
+          <div
+            v-for="banner in banners"
+            :key="banner.id"
+            class="banner-item"
+          >
 
           <img
             :src="banner.image || defaultBanner"
+            loading="lazy"
              />
 
           <div class="banner-overlay">
@@ -70,6 +82,7 @@
 
             </div>
             </div>
+            </template>
 
       </div>
 
@@ -204,282 +217,116 @@
 
       <div class="product-grid">
 
-        <div
-          v-for="product in products"
-          :key="product.id"
-          class="product-card"
-        >
+        <!-- SKELETON -->
+        <template v-if="isLoadingProducts">
 
-          <img :src="product.image" />
+          <ProductSkeleton
+            v-for="n in 4"
+            :key="n"
+          />
 
-          <div class="product-content">
+        </template>
 
-            <h3>{{ product.title }}</h3>
+        <!-- DATA -->
+        <template v-else>
 
-            <p>
-              Rp {{ formatPrice(product.price) }}
-            </p>
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="product-card"
+          >
 
-            <div class="actions">
+            <img
+              :src="
+                product.images?.length > 1
+                  ? product.images[
+                      currentImageIndexes[
+                        product.id
+                      ] || 0
+                    ]
+                  : product.images?.[0] ||
+                    '/no-image.png'
+              "
+              loading="lazy"
+            />
 
-              <button
-                class="edit-btn"
-                @click="editProduct(product)"
-              >
-                Edit
-              </button>
+            <div class="product-content">
 
-              <button
-                class="delete-btn"
-                @click="deleteProduct(product.id)"
-              >
-                Hapus
-              </button>
+              <h3>{{ product.title }}</h3>
+
+              <p>
+                Rp {{ formatPrice(product.price) }}
+              </p>
+
+              <div class="actions">
+
+                <button
+                  class="edit-btn"
+                  @click="editProduct(product)"
+                >
+                  Edit
+                </button>
+
+                <button
+                  class="delete-btn"
+                  @click="deleteProduct(product.id)"
+                >
+                  Hapus
+                </button>
+
+              </div>
 
             </div>
 
           </div>
 
-        </div>
+        </template>
 
       </div>
 
     </section>
 
-  </div>
+    <ProductModal
+      :show="showProductModal"
+      :product-name="productName"
+      :selected-categories="selectedCategories"
+      :categories="categories"
+      :preview-images="previewImages"
+      :editing-product-id="editingProductId"
+      :is-submitting="isSubmittingProduct"
+      @close="closeProductModal"
+      @submit="handleSubmitProduct"
+      @image-change="handleImageChange"
+      @update:productName="productName = $event"
+      @update:selectedCategories="selectedCategories = $event"
+    />
 
-  <div
-    v-if="showProductModal"
-    class="modal-overlay"
-    @click="closeProductModal"
-    >
+    <BannerModal
+      :show="showBannerModal"
+      :banner-name="bannerName"
+      :banner-description="bannerDescription"
+      :banner-active="bannerActive"
+      :banner-preview="bannerPreview"
+      :is-submitting="isSubmittingBanner"
+      :editing-banner-id="editingBannerId"
+      @close="closeBannerModal"
+      @submit="
+        editingBannerId
+          ? updateBanner()
+          : createBanner()
+      "
+      @image-change="handleBannerImageChange"
+      @update:bannerName="bannerName = $event"
+      @update:bannerDescription="
+        bannerDescription = $event
+      "
+      @update:bannerActive="
+        bannerActive = $event
+      "
+    />
 
-    <div
-        class="modal-card"
-        @click.stop
-    >
-
-        <div class="modal-header">
-        <h2>
-            {{
-                editingProductId
-                ? 'Edit Product'
-                : 'Tambah Product'
-            }}
-        </h2>
-
-        <button
-            class="close-btn"
-            @click="closeProductModal"
-        >
-            ✕
-        </button>
-        </div>
-
-        <form
-            class="product-form"
-            @submit.prevent="
-                editingProductId
-                ? updateProduct()
-                : createProduct()
-            "
-        >
-
-        <!-- Nama Product -->
-        <div class="form-group">
-            <label>Nama Produk</label>
-
-            <input
-            v-model="productName"
-            type="text"
-            placeholder="Masukkan nama produk"
-            />
-        </div>
-
-        <!-- Category -->
-        <div class="form-group">
-
-            <label>Kategori</label>
-
-            <div class="checkbox-group">
-
-            <label
-                v-for="category in categories"
-                :key="category.id"
-                class="checkbox-item"
-            >
-
-                <input
-                    type="checkbox"
-                    :value="Number(category.id)"
-                    v-model="selectedCategories"
-                />
-
-                {{ category.categoryName }}
-
-            </label>
-
-            </div>
-
-        </div>
-
-        <!-- Upload -->
-        <div class="form-group">
-
-            <label>Upload Image</label>
-
-            <input
-                type="file"
-                multiple
-                accept="image/png,image/jpeg"
-                @change="handleImageChange"
-            />
-
-            <div
-                v-if="previewImages.length"
-                class="preview-container"
-                >
-                <img
-                    v-for="(image,index) in previewImages"
-                    :key="index"
-                    :src="image"
-                    class="preview-image"
-                />
-            </div>
-
-            <small>
-            Gunakan gambar portrait ukuran 4:5
-            </small>
-
-        </div>
-
-        <button
-            type="submit"
-            class="submit-btn"
-            >
-            {{
-                editingProductId
-                ? 'Update Product'
-                : 'Simpan Product'
-            }}
-        </button>
-
-        </form>
 
     </div>
-
-    </div>
-
-    <div
-        v-if="showBannerModal"
-        class="modal-overlay"
-        @click="closeBannerModal"
-        >
-        <div
-            class="modal-card"
-            @click.stop
-        >
-
-            <div class="modal-header">
-
-            <h2>
-                {{
-                editingBannerId
-                    ? 'Edit Banner'
-                    : 'Tambah Banner'
-                }}
-            </h2>
-
-            <button
-            type="button"
-            class="close-btn"
-            @click="closeBannerModal"
-            >
-                ✕
-            </button>
-
-            </div>
-
-            <form
-            class="product-form"
-            @submit.prevent="
-                editingBannerId
-                ? updateBanner()
-                : createBanner()
-            "
-            >
-
-            <div class="form-group">
-
-                <label>Nama Banner</label>
-
-                <input
-                v-model="bannerName"
-                type="text"
-                />
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Deskripsi</label>
-
-                <input
-                v-model="bannerDescription"
-                type="text"
-                />
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Status Aktif</label>
-
-                <input
-                type="checkbox"
-                v-model="bannerActive"
-                />
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Gambar Banner</label>
-
-                <input
-                type="file"
-                accept="image/*"
-                @change="
-                    handleBannerImageChange
-                "
-                />
-
-            </div>
-
-            <img
-                v-if="bannerPreview"
-                :src="bannerPreview"
-                style="
-                width:100%;
-                border-radius:12px;
-                "
-            />
-
-            <button
-            type="submit"
-            class="submit-btn"
-            >
-                {{
-                editingBannerId
-                    ? 'Update Banner'
-                    : 'Simpan Banner'
-                }}
-            </button>
-
-            </form>
-
-        </div>
-        </div>
 
 </template>
 
@@ -491,6 +338,10 @@ import { categoryService } from '~/services/categoryService'
 import { productService } from '~/services/productService'
 import { API_BASE_URL } from '~/utils/constants'
 import { bannerService } from '~/services/bannerService'
+import ProductModal from '~/components/ProductModal.vue'
+import BannerModal from '~/components/BannerModal.vue'
+import ProductSkeleton from '~/components/Skeleton/ProductSkeleton.vue'
+import BannerSkeleton from '~/components/Skeleton/BannerSkeleton.vue'
 
 useAuth()
 
@@ -500,12 +351,34 @@ definePageMeta({
 
 const products = ref([])
 
+const defaultBanner = '/no-image.png'
+
 const {
     banners,
     getBanners
 } = useBanners()
 
+const isLoadingProducts = ref(true)
+const isLoadingCategories = ref(true)
+const isLoadingBanners = ref(true)
+
+const showProductModal = ref(false)
+
+const productName = ref('')
+
+const currentImageIndexes = ref({})
+
+const selectedCategories = ref([])
+
+const previewImages = ref([])
+
 const selectedImages = ref([])
+
+const editingProductId = ref(null)
+
+const isSubmittingProduct = ref(false)
+
+const isSubmittingBanner = ref(false)
 
 const handleImageChange = (event) => {
 
@@ -519,118 +392,165 @@ const handleImageChange = (event) => {
 
 }
 
-const getProducts = async () => {
+const startImageSlider = () => {
 
-  try {
+  setInterval(() => {
 
-    const response =
-      await productService.getAllProducts()
+    products.value.forEach(product => {
 
-    products.value = response.map(
-      product => ({
-        id: product.id,
-        title: product.productName,
-        image:
-        product.productImage?.[0]?.image
-            ? `${API_BASE_URL}${product.productImage[0].image}`
-            : '/no-image.png',
-        price: product.price,
-        categories:
-          product.productCategories
-      })
-    )
+      if (
+        product.images &&
+        product.images.length > 1
+      ) {
 
-  } catch (error) {
+        if (
+          currentImageIndexes.value[
+            product.id
+          ] === undefined
+        ) {
 
-    console.error(error)
+          currentImageIndexes.value[
+            product.id
+          ] = 0
 
+        }
+
+        currentImageIndexes.value[
+          product.id
+        ] =
+          (
+            currentImageIndexes.value[
+              product.id
+            ] + 1
+          ) % product.images.length
+
+      }
+
+    })
+
+  }, 2500)
+
+}
+
+const handleSubmitProduct = async () => {
+
+  if (editingProductId.value) {
+    await updateProduct()
+  } else {
+    await createProduct()
   }
 
 }
 
 const createProduct = async () => {
 
-    if (!productName.value.trim()) {
-        alert('Nama produk wajib diisi')
-        return
-    }
-
-    if (!selectedCategories.value.length) {
-        alert('Pilih minimal 1 kategori')
-        return
-    }
-
   try {
 
-    const formData =
-      new FormData()
+    isSubmittingProduct.value = true
+
+    const formData = new FormData()
 
     formData.append(
       'productName',
       productName.value
     )
 
-    formData.append(
-        'category',
-        JSON.stringify(
-            selectedCategories.value.map(Number)
+    selectedCategories.value.forEach(
+      categoryId => {
+
+        formData.append(
+          'categories[]',
+          categoryId
         )
+
+      }
     )
 
-    selectedImages.value.forEach(image => {
+    selectedImages.value.forEach(
+      image => {
 
-      formData.append(
-        'images',
-        image
-      )
+        formData.append(
+          'images',
+          image
+        )
 
-    })
-
-    console.log(
-    'CATEGORY:',
-    selectedCategories.value
+      }
     )
-
-    console.log(
-    'CATEGORY JSON:',
-    JSON.stringify(
-        selectedCategories.value.map(Number)
-    )
-    )
-
-    for (const pair of formData.entries()) {
-        console.log(pair[0], pair[1])
-    }
 
     await productService.createProduct(
-    formData
+      formData
     )
 
     await getProducts()
 
-    showProductModal.value = false
-    productName.value = ''
-    selectedCategories.value = []
-    selectedImages.value = []
-    previewImages.value = []
+    closeProductModal()
 
-    } catch (error) {
+  } catch (error) {
 
-    console.log('ERROR FULL:', error)
+  console.error(error)
 
-    console.log('ERROR DATA:', error.data)
-
-    alert(
-        JSON.stringify(
-        error.data,
-        null,
-        2
-        )
-    )
-
-    }
+  } finally {
+    isSubmittingProduct.value = false
+  }
 
 }
+
+const updateProduct = async () => {
+
+  try {
+
+    isSubmittingProduct.value = true
+
+    const formData = new FormData()
+
+    formData.append(
+      'productName',
+      productName.value
+    )
+
+    selectedCategories.value.forEach(
+      categoryId => {
+
+        formData.append(
+          'categories[]',
+          categoryId
+        )
+
+      }
+    )
+
+    selectedImages.value.forEach(
+      image => {
+
+        formData.append(
+          'images',
+          image
+        )
+
+      }
+    )
+
+    await productService.updateProduct(
+      editingProductId.value,
+      formData
+    )
+
+    await getProducts()
+
+    closeProductModal()
+
+  } catch (error) {
+
+  console.error(error)
+
+  } finally {
+
+    isSubmittingProduct.value = false
+
+  }
+
+}
+
 
 const openCreateModal = () => {
 
@@ -641,122 +561,34 @@ const openCreateModal = () => {
   selectedCategories.value = []
 
   selectedImages.value = []
+
   previewImages.value = []
 
   showProductModal.value = true
 
 }
 
-const previewImages = ref([])
+const closeProductModal = () => {
 
-const showProductModal = ref(false)
-const showBannerModal = ref(false)
+  editingProductId.value = null
 
-const productName = ref('')
+  productName.value = ''
 
-const selectedCategories = ref([])
+  selectedCategories.value = []
 
-const categories = ref([])
+  selectedImages.value = []
 
-const getCategories = async () => {
+  previewImages.value.forEach(image => {
 
-  try {
+    if (image.startsWith('blob:')) {
 
-    categories.value =
-      await categoryService.getAllCategory()
+      URL.revokeObjectURL(image)
 
-  } catch (error) {
-
-    console.error(error)
-
-  }
-
-}
-
-onMounted(async () => {
-
-  await getCategories()
-
-  await getProducts()
-
-  await getBanners(true)
-})
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('id-ID').format(price)
-}
-
-const updateProduct = async () => {
-
-    if (!productName.value.trim()) {
-        alert('Nama produk wajib diisi')
-        return
     }
 
-    if (!selectedCategories.value.length) {
-        alert('Pilih minimal 1 kategori')
-        return
-    }
+  })
 
-  try {
-
-    const formData =
-      new FormData()
-
-    formData.append(
-      'productName',
-      productName.value
-    )
-
-    formData.append(
-        'category',
-        JSON.stringify(
-            selectedCategories.value.map(Number)
-        )
-    )
-
-    selectedImages.value.forEach(image => {
-
-      formData.append(
-        'images',
-        image
-      )
-
-    })
-
-    console.log(
-    'CATEGORY:',
-    selectedCategories.value
-    )
-
-    console.log(
-    'CATEGORY JSON:',
-    JSON.stringify(
-        selectedCategories.value.map(Number)
-    )
-    )
-
-    await productService.updateProduct(
-    editingProductId.value,
-    formData
-    )
-
-    await getProducts()
-
-    showProductModal.value = false
-
-    editingProductId.value = null
-
-    productName.value = ''
-    selectedCategories.value = []
-    selectedImages.value = []
-    previewImages.value = []
-
-  } catch (error) {
-
-    console.error(error)
-
-  }
+  showProductModal.value = false
 
 }
 
@@ -767,17 +599,124 @@ const editProduct = (product) => {
   productName.value = product.title
 
   selectedCategories.value =
-  product.categories?.map(
-    item => item.category.id
-  ) || []
+    product.categories?.map(
+      item => item.category.id
+    ) || []
 
-    previewImages.value =
+  previewImages.value =
     product.image &&
     product.image !== '/no-image.png'
-        ? [product.image]
-        : []
+      ? [product.image]
+      : []
 
   showProductModal.value = true
+
+}
+
+
+
+const getProducts = async () => {
+
+  try {
+
+    isLoadingProducts.value = true
+
+    const response =
+      await productService.getAllProducts()
+
+    products.value =
+      response.data.data.map(
+        product => ({
+
+          id: product.id,
+
+          title: product.productName,
+
+          images:
+            product.productImage?.length
+              ? product.productImage.map(
+                  item =>
+                    `${API_BASE_URL}${item.image}`
+                )
+              : ['/no-image.png'],
+
+          price: product.price,
+
+          categories:
+            product.productCategories
+
+        })
+      )
+
+  } catch (error) {
+
+  console.error(error)
+
+  } finally {
+
+    isLoadingProducts.value = false
+
+  }
+
+}
+
+const showBannerModal = ref(false)
+
+const getBannerData = async () => {
+
+  try {
+
+    isLoadingBanners.value = true
+
+    await getBanners(true)
+
+  } finally {
+
+    isLoadingBanners.value = false
+
+  }
+
+}
+
+
+
+const categories = ref([])
+
+const getCategories = async () => {
+
+  try {
+
+    isLoadingCategories.value = true
+
+    categories.value =
+      await categoryService.getAllCategory()
+
+  } catch (error) {
+
+  console.error(error)
+
+  } finally {
+
+    isLoadingCategories.value = false
+
+  }
+
+}
+
+onMounted(async () => {
+
+  await Promise.all([
+    getCategories(),
+    getProducts(),
+    getBannerData()
+  ])
+
+  startImageSlider()
+
+})
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('id-ID').format(price)
 }
 
 const deleteProduct = async (id) => {
@@ -796,13 +735,11 @@ const deleteProduct = async (id) => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
 
   }
 
 }
-
-const editingProductId = ref(null)
 
 const newCategory = ref('')
 
@@ -830,7 +767,7 @@ const addCategory = async () => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
 
   } finally {
 
@@ -873,7 +810,7 @@ const updateCategory = async (id) => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
   }
 }
 
@@ -893,30 +830,8 @@ const deleteCategory = async (id) => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
   }
-}
-
-const resetProductForm = () => {
-
-  editingProductId.value = null
-
-  productName.value = ''
-
-  selectedCategories.value = []
-
-  selectedImages.value = []
-
-  previewImages.value = []
-
-}
-
-const closeProductModal = () => {
-
-  resetProductForm()
-
-  showProductModal.value = false
-
 }
 
 const bannerName = ref('')
@@ -945,6 +860,15 @@ const resetBannerForm = () => {
 
 const closeBannerModal = () => {
 
+  if (
+    bannerPreview.value &&
+    bannerPreview.value.startsWith('blob:')
+  ) {
+    URL.revokeObjectURL(
+      bannerPreview.value
+    )
+  }
+
   resetBannerForm()
 
   showBannerModal.value = false
@@ -968,17 +892,27 @@ const handleBannerImageChange = (
 
   if (!file) return
 
+  if (
+    bannerPreview.value &&
+    bannerPreview.value.startsWith('blob:')
+  ) {
+    URL.revokeObjectURL(
+      bannerPreview.value
+    )
+  }
+
   bannerImage.value = file
 
   bannerPreview.value =
     URL.createObjectURL(file)
-
 
 }
 
 const createBanner = async () => {
 
   try {
+
+    isSubmittingBanner.value = true
 
     const formData = new FormData()
 
@@ -1016,7 +950,11 @@ const createBanner = async () => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
+
+  } finally {
+
+    isSubmittingBanner.value = false
 
   }
 
@@ -1025,6 +963,8 @@ const createBanner = async () => {
 const updateBanner = async () => {
 
   try {
+
+    isSubmittingBanner.value = true
 
     const formData = new FormData()
 
@@ -1063,7 +1003,11 @@ const updateBanner = async () => {
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
+
+  } finally {
+
+    isSubmittingBanner.value = false
 
   }
 
@@ -1113,7 +1057,7 @@ const deleteBanner = async (
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
 
   }
 
@@ -1284,94 +1228,6 @@ const deleteBanner = async (
   cursor: pointer;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 999;
-}
-
-.modal-card {
-  width: 100%;
-  max-width: 520px;
-
-  background: white;
-  border-radius: 28px;
-
-  padding: 32px;
-
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  margin-bottom: 28px;
-}
-
-.modal-header h2 {
-  color: #b58763;
-}
-
-.close-btn {
-  width: 40px;
-  height: 40px;
-
-  border: none;
-  border-radius: 12px;
-
-  background: #f8f5f2;
-  color: #b58763;
-
-  font-size: 18px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  transition: 0.3s;
-}
-
-.close-btn:hover {
-  background: #f1e5da;
-  transform: rotate(90deg);
-}
-
-.product-form {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-.form-group input[type="text"],
-.form-group input[type="file"] {
-  background: #f8f5f2;
-  cursor: pointer;
-}
-
-.checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
 .checkbox-item {
   background: #f8f5f2;
   border-radius: 12px;
@@ -1384,26 +1240,6 @@ const deleteBanner = async (
 
 
   font-size: 14px;
-}
-
-.checkbox-item:hover {
-  background: #f1e5da;
-}
-
-.submit-btn {
-  height: 54px;
-  border: none;
-  border-radius: 14px;
-
-  background: #b58763;
-  color: white;
-
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.submit-btn:hover {
-  opacity: 0.9;
 }
 
 .product-grid {
@@ -1631,11 +1467,6 @@ const deleteBanner = async (
     align-items: start;
     gap: 16px;
   }
-
-  .modal-card {
-  max-height: 90vh;
-  overflow-y: auto;
-}
 
 
 }
