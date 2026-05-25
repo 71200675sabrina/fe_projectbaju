@@ -117,7 +117,7 @@
 import { useAuth } from '~/composables/useAuth'
 import { ref, onMounted } from 'vue'
 import { categoryService } from '~/services/categoryService'
-import { ChevronDown, Menu, Search } from '@lucide/vue'
+import { ChevronDown, Menu, Search } from 'lucide-vue-next'
 
 const categories = ref([])
 const searchOpen = ref(false)
