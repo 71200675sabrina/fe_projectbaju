@@ -18,8 +18,7 @@ export const productService = {
       }
     )
 
-    console.log('response:', response)
-    return response.data.data
+    return response.data
   },
 
   // GET PRODUCT BY ID

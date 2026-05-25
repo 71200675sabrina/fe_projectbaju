@@ -6,7 +6,7 @@
           Produk Terbaru
         </p>
 
-        <a href="#">Telusuri</a>
+        <NuxtLink to="/product"><Span>Lihat Semua</Span></NuxtLink>
     </div>
 
 
@@ -42,7 +42,7 @@ const getProducts = async () => {
       await productService.getAllProducts(null, 'desc', 4, 1)
 
     products.value =
-      response.map(product => ({
+      response.data.map(product => ({
         id: product.id,
         title: product.productName,
         image:
@@ -89,11 +89,6 @@ onMounted(() => {
   gap: 20px;
 }
 
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
 
 @media (max-width: 992px) {
   .product-grid {
