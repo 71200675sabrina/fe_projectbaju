@@ -6,7 +6,7 @@
           Produk Terbaru
         </p>
 
-        <NuxtLink to="/product"><Span>Lihat Semua</Span></NuxtLink>
+        <NuxtLink to="/product"><span>Lihat Semua</span></NuxtLink>
     </div>
 
 
@@ -74,7 +74,7 @@ const getProducts = async () => {
       )
 
     products.value =
-      response.data.data.map(product => ({
+      response.data.map(product => ({
 
         id: product.id,
 

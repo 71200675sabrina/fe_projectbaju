@@ -625,7 +625,7 @@ const getProducts = async () => {
       await productService.getAllProducts()
 
     products.value =
-      response.data.data.map(
+      response.data.map(
         product => ({
 
           id: product.id,
