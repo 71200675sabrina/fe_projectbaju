@@ -12,14 +12,36 @@
 
     <div class="product-grid">
 
-      <ProductCard
-        v-for="product in products"
-        :key="product.id"
-        :id="product.id"
-        :image="product.image"
-        :title="product.title"
-        :price="product.price"
-      />
+      <template v-if="isLoading">
+
+        <SkeletonCard
+          v-for="n in 4"
+          :key="n"
+        />
+
+      </template>
+
+      <!-- REAL DATA -->
+      <template v-else>
+
+        <ProductCard
+          v-for="product in products"
+          :key="product.id"
+          :id="product.id"
+          :image="
+            product.images?.length > 1
+              ? product.images[
+                  currentImageIndexes[
+                    product.id
+                  ] || 0
+                ]
+              : product.images?.[0]
+          "
+          :title="product.title"
+          :price="product.price"
+        />
+
+      </template>
 
     </div>
 
@@ -31,37 +53,103 @@ import { ref, onMounted } from 'vue'
 import ProductCard from './ProductCard.vue'
 import { productService } from '~/services/productService'
 import { API_BASE_URL } from '~/utils/constants'
+import SkeletonCard from './Skeleton/SkeletonCard.vue'
 
 const products = ref([])
+const isLoading = ref(true)
+const currentImageIndexes = ref({})
 
 const getProducts = async () => {
 
   try {
 
+    isLoading.value = true
+
     const response =
-      await productService.getAllProducts(null, 'desc', 4, 1)
+      await productService.getAllProducts(
+        null,
+        'desc',
+        4,
+        1
+      )
 
     products.value =
-      response.data.map(product => ({
+      response.data.data.map(product => ({
+
         id: product.id,
+
         title: product.productName,
-        image:
-          product.productImage?.[0]?.image
-            ? `${API_BASE_URL}${product.productImage[0].image}`
-            : '/no-image.png',
+
+        images:
+          product.productImage?.length
+            ? product.productImage.map(
+                item =>
+                  `${API_BASE_URL}${item.image}`
+              )
+            : ['/no-image.png'],
+
         price: product.price
+
       }))
 
   } catch (error) {
 
-    console.error(error)
+  console.error(error)
+
+  } finally {
+
+    isLoading.value = false
 
   }
 
 }
 
-onMounted(() => {
-  getProducts()
+const startImageSlider = () => {
+
+  setInterval(() => {
+
+    products.value.forEach(product => {
+
+      if (
+        product.images &&
+        product.images.length > 1
+      ) {
+
+        if (
+          currentImageIndexes.value[
+            product.id
+          ] === undefined
+        ) {
+
+          currentImageIndexes.value[
+            product.id
+          ] = 0
+
+        }
+
+        currentImageIndexes.value[
+          product.id
+        ] =
+          (
+            currentImageIndexes.value[
+              product.id
+            ] + 1
+          ) % product.images.length
+
+      }
+
+    })
+
+  }, 2500)
+
+}
+
+onMounted(async () => {
+
+  await getProducts()
+
+  startImageSlider()
+
 })
 </script>
 
