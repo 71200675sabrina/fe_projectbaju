@@ -13,7 +13,6 @@
           <div class="hero-text">
             <h1>{{ slide.title }}</h1>
             <p>{{ slide.subtitle }}</p>
-            <button>Shop Now</button>
           </div>
         </div>
       </SwiperSlide>
@@ -89,8 +88,15 @@ onMounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.15);
+
+  transition: background 0.3s ease;
 }
+
+.slide:hover::after {
+  background: rgba(0, 0, 0, 0.4);
+}
+
 
 /* TEXT */
 .hero-text {
@@ -100,6 +106,19 @@ onMounted(() => {
   color: white;
   z-index: 2;
   max-width: 40%;
+
+  opacity: 0;
+  transform: translateY(20px);
+
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+/* Muncul saat hover */
+.slide:hover .hero-text {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-text h1 {
